@@ -1,0 +1,16 @@
+Package: png.vMF
+Type: Package
+Title: A collection of functions using von Mises-Fisher distribution including GLM
+Version: 1.0
+Date: 2023-01-01
+Author: Kipoong Kim
+Maintainer: Kipoong Kim <kkp7700@gmail.com>
+Description: Description.
+License: GPL-3
+Imports: Rcpp (>= 1.0.8.3), Matrix, ggplot2, MASS, dplyr, mnormt, plyr, gtools
+LinkingTo: Rcpp, RcppArmadillo
+RoxygenNote: 7.2.3
+Encoding: UTF-8
+LazyData: true
+NeedsCompilation: yes
+Packaged: 2023-02-16 16:49:18 UTC; png

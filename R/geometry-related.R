@@ -38,6 +38,29 @@ FrechetMean <- function(X, ...){
 
 
 
+#' @export vMF.MuKappa
+vMF.MuKappa <- function(Y, kappa.type=4){
+  n <- nrow(Y)
+  q <- ncol(Y)
+  
+  muhat <- colSums(Y) %>% {./norm(.,"2")} # mle of mean direction in vMF
+  rbar <- colSums(Y) %>% {norm(.,"2")/n}
+  
+  if(is.null(kappa.type)){
+    kappa0 <- 1
+  } else {
+    kappa0 <- list(
+      (q-1) / 2*(1-rbar),
+      q*rbar*( 1+q/(q+2)*rbar^2 + q^2*(q+8)/((q+2)^2*(q+4))*rbar^4 ),
+      (rbar*q) / (1-rbar^2),
+      (rbar*q - rbar^3) / (1-rbar^2)
+    )[[kappa.type]]
+  }
+  
+  muhat * kappa0
+  
+}
+
 
 #
 

@@ -75,7 +75,12 @@ b2.vMF <- function(theta){
   NORM <- norm(theta, "2")
   s <- subgrad(theta)
   
-  tcrossprod(s) * Hq(theta) + Bq(theta) * 1/NORM * (diag(1,q) - tcrossprod(theta/NORM) )
+  # if( NORM < 1e-10 ){
+  #   tcrossprod(s) * Hq(theta) + Bq(theta)
+  # } else {
+    tcrossprod(s) * Hq(theta) + Bq(theta) / NORM * (diag(1,q) - tcrossprod(theta/NORM) )
+  # }
+  
 }
 
 
@@ -506,7 +511,7 @@ glm_vmf_FixedMean_Offset <- function(X, Y, MU=NULL, Offset=NULL, lambda=1e-6, be
 
 
 #' @export glm_vmf_FixedMean_Offset2
-glm_vmf_FixedMean_Offset2 <- function(X, Y, MU=NULL, Offset=NULL, lambda=1e-12, beta0=NULL, maxit=1000, eps=1e-8, standardize=TRUE){
+glm_vmf_FixedMean_Offset2 <- function(X, Y, MU=NULL, Offset=NULL, lambda=1e-12, beta0=NULL, maxit=100, eps=1e-8, standardize=TRUE, kappa.type=4){
   
   if(FALSE){
     X=simdata$X; Y=simdata$Y; MU=NULL; Offset=NULL; lambda=1e-2; maxit=100; eps=1e-8; standardize=TRUE
@@ -548,8 +553,24 @@ glm_vmf_FixedMean_Offset2 <- function(X, Y, MU=NULL, Offset=NULL, lambda=1e-12, 
     MU <- FrechetMean(Y)
     
     muhat <- colSums(Y) %>% {./norm(.,"2")} # mle of mean direction in vMF
-    rbar <- colSums(Y) %>% {norm(.,"2")/n}
-    kappa0 <- (rbar*q - rbar^3) / (1-rbar^2) # approximation
+    rbar <- colSums(Y) %>% {norm(.,"2")/nrow(Y)}
+    
+    if(is.null(kappa.type)){
+      kappa0 <- 1
+    } else {
+      kappa0 <- list(
+        (q-1) / 2*(1-rbar),
+        q*rbar*( 1+q/(q+2)*rbar^2 + q^2*(q+8)/((q+2)^2*(q+4))*rbar^4 ),
+        (rbar*q) / (1-rbar^2),
+        (rbar*q - rbar^3) / (1-rbar^2)
+      )[[kappa.type]]
+    }
+    
+    
+    # kappa0 <- (q-1) / 2*(1-rbar) # approximation
+    # kappa0 <- q*rbar*( 1+q/(q+2)*rbar^2 + q^2*(q+8)/((q+2)^2*(q+4))*rbar^4 ) # approximation
+    # kappa0 <- (rbar*q) / (1-rbar^2) # approximation
+    # kappa0 <- (rbar*q - rbar^3) / (1-rbar^2) # approximation
     
     MU <- muhat * kappa0
   }
@@ -584,7 +605,7 @@ glm_vmf_FixedMean_Offset2 <- function(X, Y, MU=NULL, Offset=NULL, lambda=1e-12, 
     b2.list <- lapply(1:n, function(i) b2.vMF( Offset[i,] + crossprod(Xt.list[[i]], beta) ))
     W <- do.call("adiag", b2.list) # magic::adiag
     
-    Z <- crossprod(Xt, beta) + solve(W) %*% (yt - eta)
+    Z <- crossprod(Xt, beta) + solve(W + diag(lambda, n*q, n*q)) %*% (yt - eta)
     
     beta <- solve(Xt %*% W %*% t(Xt) + diag(lambda,q*(p+1),q*(p+1))) %*% Xt %*% W %*% Z
     

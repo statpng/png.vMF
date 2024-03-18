@@ -1,22 +1,44 @@
 function(){
 
-  library(dplyr)  
+  library(dplyr)
   devtools::load_all()
   
-  simdata <- sim.sphere(n=50, p=2, r=1, mu=c(0,0,1), snr=10, s=2)
-  
-  simdata$X %>% png.sphere()
-  
-  
-  simdata2 <- sim.glm_vmf(n=50, p=1, q=3, sd=50, mu=c(0,0,50), orthogonal=T)
-  
-  simdata2$Y %>% png.sphere()
+  simdata1 <- sim.glm_vmf(n=100, p=1, q=3, sd=50, mu=c(0,0,100), orthogonal=T)
+  # simdata1$Y %>% png.sphere()
+  fit <- glm_vmf_FixedMean_Offset2(X=simdata1$X, Y=simdata1$Y, lambda=1e-4, eps=1e-16)
+  rbind(simdata1$B, fit$beta)
   
   
-  fit <- glm_vmf_FixedMean_Offset(X=simdata2$X, Y=simdata2$Y, lambda=0)
+  simdata2 <- sim.glm_vmf(n=50, p=1, q=3, sd=50, mu=c(0,0,100), orthogonal=T)
+  # simdata2$Y %>% png.sphere()
+  fit <- glm_vmf_FixedMean_Offset2(X=simdata2$X, Y=simdata2$Y, lambda=1e-6, eps=1e-16)
+  rbind(simdata2$B, fit$beta)
   
-  fit$beta
   
+  simdata3 <- sim.glm_vmf(n=50, p=1, q=3, sd=50, mu=c(0,0,500), orthogonal=T)
+  # simdata2$Y %>% png.sphere()
+  fit <- glm_vmf_FixedMean_Offset2(X=simdata3$X, Y=simdata3$Y, lambda=0, eps=1e-16)
+  rbind(simdata3$B, fit$beta)
+  
+  
+  
+  simdata4 <- sim.glm_vmf(n=50, p=1, q=3, sd=1000, mu=c(0,0,500), orthogonal=T)
+  # simdata4$Y %>% png.sphere()
+  fit <- glm_vmf_FixedMean_Offset2(X=simdata4$X, Y=simdata4$Y, lambda=0, eps=1e-16)
+  rbind(simdata4$B, fit$beta)
+  
+  
+  simdata5 <- sim.glm_vmf(n=50, p=2, q=4, sd=500, mu=c(0,0,0,100), orthogonal=T)
+  # simdata5$Y %>% png.sphere()
+  fit <- glm_vmf_FixedMean_Offset2(X=simdata5$X, Y=simdata5$Y, lambda=0, eps=1e-16)
+  rbind(simdata5$B, fit$beta)
+  
+  
+  
+  simdata6 <- sim.glm_vmf(n=50, p=1, q=3, sd=5, mu=c(0,0,50), orthogonal=T)
+  # simdata6$Y %>% png.sphere()
+  fit <- glm_vmf_FixedMean_Offset2(X=simdata5$X, Y=simdata5$Y, lambda=0, eps=1e-16)
+  rbind(simdata5$B, fit$beta)
 }
 
 
